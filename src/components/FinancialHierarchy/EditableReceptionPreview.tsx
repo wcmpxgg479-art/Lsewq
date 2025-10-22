@@ -161,6 +161,12 @@ const PositionItem: React.FC<PositionItemProps> = ({ item, onUpdate, onNameUpdat
   }
 
   const handleSelectItem = (selectedItem: { name: string; price?: number }) => {
+    if (onNameUpdate) {
+      onNameUpdate(selectedItem.name)
+    }
+    if (onUpdate && selectedItem.price !== undefined && selectedItem.price > 0) {
+      onUpdate({ price: selectedItem.price })
+    }
     setEditName(selectedItem.name)
     if (selectedItem.price !== undefined && selectedItem.price > 0) {
       setEditPrice(selectedItem.price)
@@ -202,14 +208,23 @@ const PositionItem: React.FC<PositionItemProps> = ({ item, onUpdate, onNameUpdat
                 {item.item_description}
               </p>
               <div className="flex items-center gap-1">
-                {!isLinked && onUpdate && (
-                  <button
-                    onClick={() => setIsEditingName(true)}
-                    className="text-gray-400 hover:text-blue-600 transition flex-shrink-0"
-                    title="Редактировать"
-                  >
-                    <Edit2 size={14} />
-                  </button>
+                {!isLinked && onNameUpdate && (
+                  <>
+                    <button
+                      onClick={() => setIsEditingName(true)}
+                      className="text-gray-400 hover:text-blue-600 transition flex-shrink-0"
+                      title="Редактировать"
+                    >
+                      <Edit2 size={14} />
+                    </button>
+                    <button
+                      onClick={() => setShowReferenceModal(true)}
+                      className="text-gray-400 hover:text-blue-600 transition flex-shrink-0"
+                      title="Выбрать из справочника"
+                    >
+                      <Search size={14} />
+                    </button>
+                  </>
                 )}
                 <button
                   onClick={handleCopyName}
