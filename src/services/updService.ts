@@ -322,3 +322,58 @@ export async function disbandUpdDocument(updId: string): Promise<void> {
     throw error;
   }
 }
+
+export async function getUpdForExport(updId: string) {
+  const { data: updDoc, error: updError } = await supabase
+    .from('upd_documents')
+    .select(`
+      id,
+      document_number,
+      document_date,
+      counterparties (
+        id,
+        name
+      )
+    `)
+    .eq('id', updId)
+    .single();
+
+  if (updError) {
+    throw updError;
+  }
+
+  const { data: items, error: itemsError } = await supabase
+    .from('reception_items')
+    .select(`
+      id,
+      item_description,
+      work_group,
+      price,
+      quantity,
+      transaction_type,
+      accepted_motors (
+        id,
+        position_in_reception,
+        motor_service_description,
+        motor_inventory_number,
+        subdivisions (
+          name
+        ),
+        receptions (
+          id,
+          reception_number,
+          reception_date
+        )
+      )
+    `)
+    .eq('upd_document_id', updId);
+
+  if (itemsError) {
+    throw itemsError;
+  }
+
+  return {
+    ...updDoc,
+    items: items || []
+  };
+}

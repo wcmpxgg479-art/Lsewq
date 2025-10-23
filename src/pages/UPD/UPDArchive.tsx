@@ -3,12 +3,13 @@ import { useNavigate } from 'react-router-dom'
 import { AppLayout } from '../../components/Layout/AppLayout'
 import { Button } from '../../components/ui/Button'
 import { Alert } from '../../components/ui/Alert'
-import { getUpdDocuments, disbandUpdDocument, UPDDocumentWithCounterparty } from '../../services/updService'
+import { getUpdDocuments, disbandUpdDocument, UPDDocumentWithCounterparty, getUpdForExport } from '../../services/updService'
 import { DisbandConfirmationModal } from '../../components/UPD/DisbandConfirmationModal'
 import { SpecialDocumentSelectionModal } from '../../components/UPD/SpecialDocumentSelectionModal'
-import { CreditCard as Edit, FileText, XCircle, Pencil, FileSpreadsheet } from 'lucide-react'
+import { CreditCard as Edit, FileText, XCircle, Pencil, FileSpreadsheet, Download } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { SpecialDocument } from '../../services/specialDocumentService'
+import { exportUpdToExcel } from '../../utils/exportUpdToExcel'
 
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString)
@@ -151,6 +152,15 @@ export const UPDArchive: React.FC = () => {
     }
   }
 
+  const handleExportToExcel = async (updId: string) => {
+    try {
+      const data = await getUpdForExport(updId)
+      await exportUpdToExcel(data as any)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Ошибка экспорта УПД')
+    }
+  }
+
   if (loading) {
     return (
       <AppLayout title="Архив УПД">
@@ -285,6 +295,16 @@ export const UPDArchive: React.FC = () => {
                     </td>
                     <td className="px-3 py-2 text-right">
                       <div className="flex items-center justify-end gap-1">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleExportToExcel(upd.id)}
+                          title="Экспорт в Excel"
+                          className="text-xs px-2 py-1"
+                        >
+                          <Download className="w-3 h-3" />
+                          <span className="ml-1">xlsx</span>
+                        </Button>
                         <Button
                           size="sm"
                           variant="outline"
